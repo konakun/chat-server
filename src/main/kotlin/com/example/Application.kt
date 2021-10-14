@@ -1,5 +1,6 @@
 package com.example
 
+import com.google.gson.Gson
 import io.ktor.http.cio.websocket.*
 import io.ktor.application.*
 import io.ktor.request.*
@@ -17,10 +18,12 @@ fun Application.module() {
 
     routing{
         val connections = Collections.synchronizedSet<Connection?>(LinkedHashSet())
+        val gson = Gson()
         webSocket("/chat"){
-            val username = call.request.header("username")
+            val thisConnection: Connection?
             println("Adding user!")
-            val thisConnection = Connection(this, username)
+            val username = call.request.header("username")
+            thisConnection = Connection(this,username)
             connections += thisConnection
             try{
                 send("You are connected as [${thisConnection.name}]")
@@ -31,12 +34,25 @@ fun Application.module() {
                 }
                 for(frame in incoming){
                     frame as? Frame.Text ?: continue
-                    val receivedText = frame.readText()
-                    val textWithUsername = "[${thisConnection.name}]: $receivedText"
-                    connections.forEach{
-                        it.session.send(textWithUsername)
+                    val chat = gson.fromJson(frame.readText(), Chat::class.java)
+                    when (chat.type) {
+                        "single" -> {
+                            connections.forEach {
+                                if (it.name == chat?.to) {
+                                    it.session.send("[${thisConnection.name}]: ${chat.message}")
+                                }
+                            }
+                        }
+                        "all" -> {
+                            connections.forEach{
+                                if(it.name != thisConnection.name) {
+                                    it.session.send("[${thisConnection.name}]: ${chat.message}")
+                                }
+                            }
+                        }
                     }
                 }
+
             } catch (e: Exception){
                 println(e.localizedMessage)
             } finally {
