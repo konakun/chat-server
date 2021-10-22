@@ -1,4 +1,4 @@
-package com.example
+package com.example.chat
 
 data class Chat(
     val type: String,
