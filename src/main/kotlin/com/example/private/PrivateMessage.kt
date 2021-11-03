@@ -1,4 +1,4 @@
 package com.example.private
 
-class PrivateController {
+class PrivateMessage {
 }

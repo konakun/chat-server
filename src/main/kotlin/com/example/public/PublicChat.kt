@@ -1,4 +1,8 @@
 package com.example.public
 
-class PublicChat {
+import java.util.*
+import kotlin.collections.LinkedHashSet
+
+class PublicRoomSession(val sessionCode: Int) {
+
 }

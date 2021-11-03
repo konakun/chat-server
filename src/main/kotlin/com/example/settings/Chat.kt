@@ -1,7 +1,5 @@
-package com.example.chat
+package com.example.settings
 
 data class Chat(
-    val type: String,
-    val message: String,
-    val to: String? = null
+    val message: String
 )
